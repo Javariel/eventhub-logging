@@ -40,7 +40,6 @@ class EventHubHandler(StreamHandler):
         self.producer = EventHubProducerClient.from_connection_string(self.connection_str, **self.kwargs)
 
         self.event_batch_data = None
-        # self._create_batch_data()
 
         self.filters = [
             EventHubFilter()
@@ -55,11 +54,11 @@ class EventHubHandler(StreamHandler):
         finally:
             self.release()
 
-    def should_flush(self, record):
+    def should_flush_on_capacity(self, message):
         """
         Check for event batch data full or a record at the flushLevel or higher.
         """
-        event_data = EventData(record.msg)
+        event_data = EventData(message)
         event_data_size = event_data.message.get_message_encoded_size()
         size_after_add = (
                 self.event_batch_data.size_in_bytes
@@ -80,10 +79,11 @@ class EventHubHandler(StreamHandler):
             self._create_batch_data()
 
         try:
-            if self.should_flush(record):
+            msg = self.format(record)
+            if self.should_flush_on_capacity(msg):
                 self.flush()
                 self._create_batch_data()
-            self.event_batch_data.add(EventData(record.msg))
+            self.event_batch_data.add(EventData(msg))
             if self.should_flush_on_level(record):
                 self.flush()
         except ValueError:

@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="eventhub-logging",
-    version="0.0.2",
+    version="0.0.3",
     description="logging to azure eventhub module",
     # long_description=long_description,
     # long_description_content_type="text/markdown",
